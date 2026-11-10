@@ -1,5 +1,6 @@
 """Portable desktop launch and menu regression checks."""
 import queue
+import os
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -32,6 +33,14 @@ def test_menu_routes_and_current_input_parameters(monkeypatch):
     root = tk.Tk(); root.withdraw(); app = DemoApp(root)
     requests = []
     monkeypatch.setattr(app, 'start', lambda request: requests.append(request))
+    # A hosted Mac runner may have no usable system pasteboard. Exercise menu
+    # routing there without waiting on that external desktop service. The real
+    # clipboard round trip remains covered on local Mac and Windows desktops.
+    headless_clipboard = sys.platform == 'darwin' and bool(os.environ.get('CI'))
+    copied = []
+    if headless_clipboard:
+        monkeypatch.setattr(root, 'clipboard_clear', lambda: copied.clear())
+        monkeypatch.setattr(root, 'clipboard_append', lambda text: copied.append(text))
     try:
         app.choose_example(4)
         app.use_input_parameters()
@@ -48,6 +57,9 @@ def test_menu_routes_and_current_input_parameters(monkeypatch):
         assert app.parameter_request('bounds') == dict(operation='bounds', q=3, rows=2, columns=4, k=3)
         app.display({'operation':'check','status':'CANCELLED'})
         app.research_menu.invoke(12)
-        assert root.clipboard_get() == app.saved_text
+        if headless_clipboard:
+            assert copied == [app.saved_text]
+        else:
+            assert root.clipboard_get() == app.saved_text
     finally:
         app.close()
