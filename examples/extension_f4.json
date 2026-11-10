@@ -1,0 +1,33 @@
+{
+  "name": "extension_f4",
+  "field": {
+    "order": 4,
+    "irreducible_poly": [
+      1,
+      1,
+      1
+    ]
+  },
+  "generators": [
+    [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ]
+    ]
+  ]
+}
