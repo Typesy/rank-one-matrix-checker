@@ -26,7 +26,9 @@ def test_windows_stop_includes_descendants_and_falls_back_to_worker_kill(monkeyp
 
 
 @pytest.mark.skipif(sys.platform not in ('darwin', 'win32'), reason='Native desktop menu regression')
-def test_menu_routes_and_current_input_parameters(monkeypatch):
+def test_menu_routes_and_current_input_parameters(monkeypatch, isolated_windows_gui):
+    if isolated_windows_gui:
+        return
     import tkinter as tk
     from rankone.gui import DemoApp
     root = tk.Tk(); root.withdraw(); app = DemoApp(root)

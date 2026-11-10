@@ -1,8 +1,31 @@
-"""Keep hosted macOS tests independent of an interactive Aqua session."""
+"""Match desktop test lifetimes to a normal single-app launch."""
 import os
+from pathlib import Path
+import subprocess
 import sys
 
 import pytest
+
+
+@pytest.fixture
+def isolated_windows_gui(request):
+    """Avoid retaining Tcl interpreter state between Windows app launches.
+
+    The assertions still execute in a real Tk window; each selected GUI test
+    gets a fresh Python process. The opt-in variable exercises this harness on
+    a local Mac too. A failed child remains a failed parent test.
+    """
+    isolate = sys.platform == 'win32' or os.environ.get('RANKONE_ISOLATE_GUI_TESTS') == '1'
+    if not isolate or os.environ.get('RANKONE_GUI_TEST_CHILD') == '1':
+        return False
+    env = dict(os.environ, RANKONE_GUI_TEST_CHILD='1')
+    result = subprocess.run(
+        [sys.executable, '-m', 'pytest', '-q', request.node.nodeid],
+        cwd=Path(__file__).resolve().parents[1], env=env,
+        capture_output=True, text=True, timeout=120,
+    )
+    assert result.returncode == 0, result.stdout + '\n' + result.stderr
+    return True
 
 
 def pytest_collection_modifyitems(items):

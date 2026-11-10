@@ -165,7 +165,8 @@ def test_stop_terminates_a_running_job_and_its_replay_worker():
 
 
 @pytest.mark.skipif(sys.platform not in ('darwin','win32'),reason='Native desktop GUI workflow')
-def test_native_new_views_results_and_worker_are_connected(tmp_path,monkeypatch):
+def test_native_new_views_results_and_worker_are_connected(tmp_path,monkeypatch,isolated_windows_gui):
+    if isolated_windows_gui:return
     import tkinter as tk
     from rankone.gui import DemoApp
     r=tk.Tk();r.withdraw();app=DemoApp(r)
@@ -211,7 +212,8 @@ def test_native_new_views_results_and_worker_are_connected(tmp_path,monkeypatch)
 
 @pytest.mark.skipif(sys.platform not in ('darwin','win32'),reason='Native controls geometry at supported sizes')
 @pytest.mark.parametrize('size',['1280x850','950x650'])
-def test_all_tabs_have_accessible_controls_at_supported_window_sizes(size):
+def test_all_tabs_have_accessible_controls_at_supported_window_sizes(size,isolated_windows_gui):
+    if isolated_windows_gui:return
     import tkinter as tk
     from rankone.gui import DemoApp
     r=tk.Tk();app=DemoApp(r)
